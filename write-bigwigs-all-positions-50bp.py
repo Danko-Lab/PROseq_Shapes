@@ -53,12 +53,7 @@ BINSIZE = set_up_globals.BINSIZE
 
 os.environ["CUDA_VISIBLE_DEVICES"] = gpuNumber
 
-# import pybedtools
-# import time
-
-# data_folder = '/local/workdir/prm88/a4_PROseq_shapes/data/'
-# WINDOW = 8192
-# BINSIZE = 16
+predictionWriteThreshold = 0.01
 
 bws = {}
 label_legend = {
@@ -250,6 +245,7 @@ def write_preds(preds, locs, logfile):
     global BATCH_SIZE
     global WINDOW
     global BINSIZE
+    global predictionWriteThreshold
 
     if len(preds[:, 0]) != len(locs):
         raise ValueError('Locs has different len from preds')
@@ -375,7 +371,7 @@ def main(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-c", "--chromo", help="Chromosome: chr1 - chr22, or chrX", default="chr21")
-    parser.add_argument("-e", "--epoch", help="Epoch for the model you wish to use", type=int, default=650)
+    parser.add_argument("-e", "--epoch", help="Epoch for the model you wish to use", type=int, default=3610)
     parser.add_argument("-l", "--celltype", help="Cell type to use", default="K562")
     parser.add_argument("-p", "--plusbwpath", help="Path for plus bigwig file", default="seq/G1/G1_plus.bw")
     parser.add_argument("-m", "--minusbwpath", help="Path for minus bigwig file", default="seq/G1/G1_minus.bw")

@@ -8,15 +8,16 @@ library(tunits)
 source("common.R")
 source("hmm.prototypes.R")
 # dataPath = "/home/paul/WorkingMemory/Box Sync/a4_PROseq_shapes/data"
-dataPath = "/local/workdir/prm88/a4_PROseq_shapes/data"
+# dataPath = "/local/workdir/prm88/a4_PROseq_shapes/data"
 
 step = 50
 
 args <- commandArgs(trailingOnly=TRUE)
 chrom = args[1]
-# seedVal = args[1]
-seedVal = 3000
+cell_type = args[2]
+dataPath = args[3]
 
+seedVal = 3000
 set.seed(seedVal)
 
 # chrom = "chr7"
@@ -24,11 +25,10 @@ set.seed(seedVal)
 # chrom=c("chr20", "chr21")
 
 
-
 # bigwigPath = paste(dataPath, "/bigwigs/LAB_V1_CNN_V3/bigwigs_all_positions_50bp_chr7_ChROseq_merged", sep='')
 # bigwigPath = paste(dataPath, "/bigwigs/LAB_V1_CNN_V3/bigwigs_all_positions_50bp_", chrom, sep='')
 # bigwigPath = paste(dataPath, "/bigwigs/LAB_V1_CNN_V3/bigwigs_all_positions_50bp_", chrom, "_preds_on_simulation_filtered_002", sep='')
-bigwigPath = paste(dataPath, "/bigwigs/LAB_V2_CNN_V4/bigwigs_all_positions_50bp_K562_", chrom, sep='')
+bigwigPath = paste(dataPath, "/bigwigs/LAB_V2_CNN_V4/bigwigs_all_positions_50bp_", cell_type, "_", chrom, sep='')
 # bed.path = paste(bigwigPath, "/", "genestart-thresh001-merge.wig", sep='')
 # bed.path = "G1.dREG.peak.full.bed.gz"
 # bwPlus.path = paste(dataPath, "/", "GSM1480321_K562_GROcap_wTAP_plus.bigWig", sep='')
@@ -282,10 +282,10 @@ for (i in 1:length(all.dset)) {
 # hmmName = "hmm3states1slot1covarContinuous.startpriorsWStrandsAndShortcut.LAB_V1_CNN_V3.gamma"
 # hmmName = "hmm3states1slot1covarContinuous.startpriors.LAB_V1_CNN_V3.gamma.simulated_002"
 # hmmName = "hmm3states1slot1covarContinuous.tsspriors.LAB_V1_CNN_V3.gamma.simulated_002"
-# hmmName = "hmm3states1slot1covarContinuous.tsspriors.LAB_V2_CNN_V4.gamma"
-hmmName = "hmm3states1slot1covarContinuous.startpriors.LAB_V2_CNN_V4.gamma.GAN_input"
+# hmmName = "hmm3states1slot1covarContinuous.startpriors.LAB_V2_CNN_V4.gamma.GAN_input"
 # hmmName = "hmm3states1slot1covarContinuous.stable.LAB_V2_CNN_V4.gamma"
 # hmmName = "hmm3states1slot1covarContinuous.stable-unstable-thresh07.LAB_V2_CNN_V4.gamma"
+hmmName = "hmm3states1slot1covarContinuous.startpriors.LAB_V2_CNN_V4.gamma"
 hmm.dreg = hmm3states1slot1covarContinuous()
 nStates = 3
 

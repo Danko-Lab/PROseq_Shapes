@@ -28,18 +28,12 @@
 # - Reduce number of hidden layers to 5 (to compensate for smaller input size)
 
 # Set up globals
+data_folder = '/local/workdir/prm88/a4_PROseq_shapes/data/'
 labelVersion = 'LAB_V2'
 CNNVersion = 'CNN_V4'
 GANVersion = 'GAN_V1'
-data_folder = '/local/workdir/prm88/a4_PROseq_shapes/data/'
-#data_folder = '/local/workdir/prm88/a4_PROseq_shapes/jay-research/data'
-
 model_folder = 'multiclass-50K-windows-random-center'
-#model_folder = 'multiclass-large-windows-random-center'
-#model_folder = 'multiclass-large-windows'
 
-#WINDOW = 200
-#BINSIZE = 50
 BATCH_SIZE = 128
 WINDOW = 1024
 BINSIZE = 50
