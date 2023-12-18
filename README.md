@@ -1,13 +1,13 @@
 # PROseq_Shapes
-Comparison of two neural network methods for transcription unit annotation using precision nuclear run-on (PRO-seq)
+Accurate de novo transcription unit annotation from run-on and sequencing data
 
-Understanding the functional elements of the genome that regulate gene expression provides critical insight into the processes governing cell development and differentiation, and related disease mechanisms. An effective strategy for annotating functional elements is to measure de novo transcription along the genome. However, the relationship between transcription and functional element annotations is far from straightforward, and features within the transcriptional signal are often subtle and challenging to model. Assays such as precision nuclear run-on and sequencing (PRO-seq) are a rich source of transcriptional information and numerous annotation methods have been developed to mine these data. We hypothesize that there is additional information in PRO-seq data that has not been leveraged by previous methods. Here we investigate two computational approaches that attempt to identify and model this information and use it to improve genome annotations across a variety of cell types. Each method employs a neural network since these are well suited to the non-linear nature of the task. The first is a convolutional neural network (CNN) combined with a hidden Markov model (HMM), and the second is a conditional generative adversarial network (cGAN). Comparisons with existing methods that used the same input data showed a performance improvement for the first of our methods (CNN-HMM). The CNN used by this method was able to reliably pick out multiple features from the PRO-seq data, thus providing evidence for our original hypothesis. The cGAN, in contrast, shows great potential for producing fully labeled, simulated PRO-seq data.
+Annotations of functional elements in Metazoan genomes are critical tools used to provide insight into the processes governing cell development, differentiation, and disease. Run-on and sequencing assays measure the production of nascent RNAs and can provide an effective data source for discovering functional elements. However, the accurate inference of functional elements from run-on and sequencing data remains an open problem because the signal is noisy and challenging to model. Here we investigated computational approaches that convert run-on and sequencing data into annotations representing transcription units, including genes and non-coding RNAs. We developed a convolutional neural network trained to identify different parts in the anatomy of a transcription unit, called CGAP, which we stitched together into transcript annotations using a hidden Markov model (HMM). Comparison against existing methods showed a small but significant performance improvement using our novel CGAP-HMM approach. We developed a voting system to ensemble the top three annotation strategies, resulting in large and significant improvements over the best performing method. Finally, we also report a conditional generative adversarial network (cGAN) as a generative approach to transcription unit annotation that showed promise for further development. Collectively our work provides tools for de novo transcription unit annotation from run-on and sequencing data that are accurate enough to be useful in many applications. 
 
 ## Citation
 
 If you use this code or the resulting assemblies, please cite the following paper:
 
-*Comparison of two neural network methods for transcription unit annotation using precision nuclear run-on (PRO-seq)* <br />
+*Accurate de novo transcription unit annotation from run-on and sequencing data* <br />
 Paul R. Munn, Jay Chia, Charles G. Danko <br />
 Unpublished
 
@@ -76,7 +76,7 @@ data
     └── G1
 ```
 
-Once this structure is set up, the ```set_up_globals.py``` program need to be edited to point to the data directory you have created. Specifically, line 31 of this code should be changed to:
+Once this structure is set up, the ```set_up_globals.py``` program needs to be edited to point to the data directory you have created. Specifically, line 31 of this code should be changed to:
 ```
 data_folder = '<absolute path above data directory>/data/'
 ```
@@ -179,5 +179,14 @@ hmm3states1slot1covarContinuous.startpriors.LAB_V2_CNN_V4.gamma.K562.chr7.3000.p
 hmm3states1slot1covarContinuous.startpriors.LAB_V2_CNN_V4.gamma.K562.chr7.3000.preds.minus.bed
 ```
 
+These two files contain the predicted transcription unit annotations in .bed format for the plus and minus strands of the specified chromosome; i.e. Chromosome, Start postion, End position, Annotation identifier, Score, and Strand.
 
+For example:
+```
+chr7	226250	227300	preds_plus_1	60	+
+chr7	419950	420200	preds_plus_2	60	+
+chr7	766300	779350	preds_plus_3	60	+
+chr7	855350	951200	preds_plus_4	60	+
+                    ⋮
+```
 
