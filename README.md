@@ -190,7 +190,7 @@ chr7	855350	951200	preds_plus_4	60	+
                     ⋮
 ```
 
-### Building a consensus for CGAP-HMM, groHMM, and T-units:
+## Building a consensus for CGAP-HMM, groHMM, and T-units:
 
 In order to combine the strengths of our method and two existing, high performing, methods, we built a consensus annotation model from CGAP-HMM, groHMM ([Chae et al. 2015](https://bmcbioinformatics.biomedcentral.com/articles/10.1186/s12859-015-0656-3), [https://github.com/coregenomics/groHMM](https://github.com/coregenomics/groHMM)), and T-units ([Danko etal. 2018](https://www.nature.com/articles/s41559-017-0447-5), [https://github.com/andrelmartins](https://github.com/andrelmartins)). Errors made by each method do not appear to be correlated, so this combination should overcome their respective weaknesses. Specifically, we adopted the following approach:
 
