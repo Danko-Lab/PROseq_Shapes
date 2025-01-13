@@ -1,7 +1,5 @@
 
-library(proseq.shapes.hmm)
 library(tunits)
-source("common.R")
 source("hmm.prototypes.R")
 
 step = 50
@@ -145,85 +143,3 @@ text = system(commandLine, intern=TRUE)
 
 # 3. extended version
 # write.extended.track(preds.full.dreg, preds.dreg, chrom, chrom, paste(chrom, ".", seedVal, ".preds.ext.bed", sep=''))
-
-# Evaluate
-library(groHMM)
-library(rtracklayer)
-library(GenomicRanges)
-
-# activeTranscriptsFile = "../../data/labels/LAB_V2/gencode_high_confidence_chr7.bed"
-activeTranscriptsFile = paste("../../data/labels/LAB_V2/gencode_high_confidence_", chrom, ".bed", sep='')
-# activeTranscriptsFile = "gencode_high_confidence_chr7.bed"
-# activeTranscriptsFile = "refGene_high_confidence_10Kb.bed"
-# activeTranscriptsFile = "refGene_high_confidence_10Kb_chr7.bed"
-# activeTranscriptsFile ="../../data/labels/LAB_V1/refGene_and_GROcap_chr7.bed"
-inputFile = outputFile
-
-# Only keep parts of input file that intersect with active transcripts file
-commandLine = paste("bedtools intersect -s -a", inputFile, "-b", activeTranscriptsFile, "-wa > inputFile_intersection.bed")
-text = system(commandLine, intern=TRUE)
-
-# Try readBed instead and see if I get different results
-# activeTranscripts = readBed("K562_active_transcripts_chr7_sorted.bed")
-activeTranscripts <- import(activeTranscriptsFile, format = "BED", genome = "hg19")
-activeTranscripts$gene_id = activeTranscripts$name
-ca_activeTranscripts <- makeConsensusAnnotations(activeTranscripts)
-
-# tunits eval
-# splithmm3Transcripts <- import("splithmm3.chr7.preds.bed", format = "BED", genome = "hg19")
-# splithmm3Transcripts$gene_id = splithmm3Transcripts$name
-# ca_splithmm3Transcripts <- makeConsensusAnnotations(splithmm3Transcripts)
-# e <- evaluateHMMInAnnotations(ca_splithmm3Transcripts, ca_activeTranscripts)
-# e$eval
-predicted.transcripts <- import("inputFile_intersection.bed", format = "BED", genome = "hg19")
-predicted.transcripts$gene_id = predicted.transcripts$name
-ca_predicted.transcripts <- makeConsensusAnnotations(predicted.transcripts)
-
-e <- evaluateHMMInAnnotations(ca_predicted.transcripts, ca_activeTranscripts)
-cat("\nResults for:", inputFile, "\n\n")
-# cat("merged disassociated\ttotal\terrorRate\ttxSize\n", as.character(e$eval), "\n")
-
-splitEval = strsplit(as.character(e$eval)," ")
-cat("Merged:", splitEval[[1]][1], "\n")
-cat("Disassociated:", splitEval[[2]][1], "\n")
-cat("Total:", splitEval[[3]][1], "\n")
-cat("Error rate:", splitEval[[4]][1], "\n")
-cat("txSize:", splitEval[[5]][1], "\n")
-
-# Obtain similarity measure
-# commandLine = paste("sort -k1,1 -k2,2n inputFile_intersection.bed > outfile_sorted.bed")
-commandLine = paste("sort -k1,1 -k2,2n ", inputFile, " > outfile_sorted.bed")
-text = system(commandLine, intern=TRUE)
-
-commandLine = paste("bedtools merge -s -c 6 -o distinct -i ", activeTranscriptsFile, " | awk 'BEGIN { OFS = \"\\t\" } ; {print $1, $2, $3, \".\", \".\", $4}' > activeTranscriptsFileMerged.bed")
-text = system(commandLine, intern=TRUE)
-
-commandLine = paste("bedtools jaccard -a outfile_sorted.bed -b activeTranscriptsFileMerged.bed")
-jaccardResult = read.table(text = system(commandLine, intern=TRUE))
-cat("Jaccard similarity:", as.character(jaccardResult$V3[2]), "\n")
-
-commandLine = paste("echo $(bedtools intersect -s -c -b activeTranscriptsFileMerged.bed -a outfile_sorted.bed | awk 'BEGIN { OFS = \"\\t\" } ; ($10 > 1) {print $0}' | wc -l) | bc -l")
-runTogetherResult = read.table(text = system(commandLine, intern=TRUE))
-cat("Genes run together:", runTogetherResult[["V1"]][1], "\n")
-
-commandLine = paste("echo $(bedtools intersect -s -c -a activeTranscriptsFileMerged.bed -b outfile_sorted.bed | awk 'BEGIN { OFS = \"\\t\" } ; ($7 > 1) {print $0}' | wc -l) | bc -l")
-fragmentationResult = read.table(text = system(commandLine, intern=TRUE))
-cat("Genes broken up:", fragmentationResult[["V1"]][1], "\n")
-
-# cat("Jaccard similarity:", as.character(jaccardResult$V3[2]), "\n", "Genes broken up:", fragmentationResult[["V1"]][1], "\n", "Genes run together:", runTogetherResult[["V1"]][1], "\n")
-#cat("Genes broken up:", fragmentationResult[["V1"]][1], "\nGenes run together:", runTogetherResult[["V1"]][1], "\n")
-
-density = getTxDensity(ca_predicted.transcripts, ca_activeTranscripts)
-
-cat("density$FivePrimeFP", density$FivePrimeFP, "\n")
-cat("density$TP", density$TP, "\n")
-cat("density$PostTTS", density$PostTTS, "\n")
-cat("density$TUA", density$TUA, "\n")
-
-columnNames = c("input_file", "merged", "disassociated", "total", "error_rate", "tx_size", "jaccard", "run_together", "broken_up", "FivePrimeFP", "TP", "PostTTS", "TUA")
-line = c(inputFile, splitEval[[1]][1], splitEval[[2]][1], splitEval[[3]][1], splitEval[[4]][1], splitEval[[5]][1], as.character(jaccardResult$V3[2]), runTogetherResult[["V1"]][1], fragmentationResult[["V1"]][1], density$FivePrimeFP, density$TP, density$PostTTS, density$TUA)
-mline = matrix(line, 1, length(line))
-write.table(mline, file="evaluation_metrics.csv", row.names=FALSE, col.names=FALSE, sep="\t", eol="\n", quote=FALSE, dec=".", append=TRUE)
-
-cat("\n")
-
