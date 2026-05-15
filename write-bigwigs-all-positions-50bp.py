@@ -53,7 +53,15 @@ BINSIZE = set_up_globals.BINSIZE
 
 os.environ["CUDA_VISIBLE_DEVICES"] = gpuNumber
 
-predictionWriteThreshold = 0.01
+# import pybedtools
+# import time
+
+# data_folder = '/local/workdir/prm88/a4_PROseq_shapes/data/'
+##data_folder = '/local/workdir/prm88/a4_PROseq_shapes/jay-research/data'
+##WINDOW = 200
+##BINSIZE = 50
+# WINDOW = 8192
+# BINSIZE = 16
 
 bws = {}
 label_legend = {
@@ -99,7 +107,7 @@ chrom_sizes = {"chr1": 249250621,
                "chrX": 155270560,
                "chrY": 59373566}
 
-# Mouse amd horse
+# Mouse, horse, and fly
 chrom_sizes_mm9 = {"chr1": 197195432,
                    "chr2": 181748087,
                    "chr3": 159599783,
@@ -155,6 +163,12 @@ chrom_sizes_equCab2 = {"chr1": 185838109,
                        "chr31": 24984650,
                        "chrX": 124114077}
 
+chrom_sizes_dm3 = {"chr2L": 23011544,
+                   "chr2R": 21146708,
+                   "chr3L": 24543557,
+                   "chr3R": 27905053,
+                   "chr4": 1351857,
+                   "chrX": 22422827}
 
 class ProgressBar:
     def __init__(self, iterations):
@@ -245,7 +259,6 @@ def write_preds(preds, locs, logfile):
     global BATCH_SIZE
     global WINDOW
     global BINSIZE
-    global predictionWriteThreshold
 
     if len(preds[:, 0]) != len(locs):
         raise ValueError('Locs has different len from preds')
@@ -284,6 +297,9 @@ def main(args):
     if cellType == 'MM9': 
         chrom_sizes = chrom_sizes_mm9
         informative_bed_path = data_folder + 'ref_files/bedbins/mm9_positions.50bp.sorted.' + chromo + '.bed'
+    if cellType == 'DM3': 
+        chrom_sizes = chrom_sizes_dm3
+        informative_bed_path = data_folder + 'ref_files/bedbins/dm3_positions.50bp.sorted.' + chromo + '.bed'
     if cellType == 'equCab2': 
         chrom_sizes = chrom_sizes_equCab2
         informative_bed_path = data_folder + 'ref_files/bedbins/equCab2_positions.50bp.sorted.' + chromo + '.bed'
@@ -371,7 +387,7 @@ def main(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-c", "--chromo", help="Chromosome: chr1 - chr22, or chrX", default="chr21")
-    parser.add_argument("-e", "--epoch", help="Epoch for the model you wish to use", type=int, default=3610)
+    parser.add_argument("-e", "--epoch", help="Epoch for the model you wish to use", type=int, default=4457)
     parser.add_argument("-l", "--celltype", help="Cell type to use", default="K562")
     parser.add_argument("-p", "--plusbwpath", help="Path for plus bigwig file", default="seq/G1/G1_plus.bw")
     parser.add_argument("-m", "--minusbwpath", help="Path for minus bigwig file", default="seq/G1/G1_minus.bw")

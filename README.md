@@ -16,7 +16,7 @@ Unpublished
 
 * `Bash >= 4`
 * `Python >= 3.5`
-* Python modules: `tensorflow >= 2.0, scipy, numpy, matplotlib, getopt`
+* Python modules: `tensorflow = 2.10, scipy, numpy<2, pandas = 1.5.3, h5py<4, pyBigWig = 0.3.22, matplotlib, getopt`
 * `R >= 3.4.2`
 * R libraries: `tunits, rqhmm`
 
@@ -39,7 +39,7 @@ There is no need for installation of the code in this repository. However, the T
 
 The data required to run the programs below can be found in the data directory. This includes the following:
 * A pre-trained model produced by the CNN 
-* References file for hg19, mm9, and equCab2
+* References file for hg19, mm9, equCab2, and dm3
 
 Example PRO-seq bigwig files can be found in the GEO, under accession number [GSM1480327](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSM1480327)
 
@@ -99,7 +99,7 @@ Program usage:
 ```
 python write-bigwigs-all-positions-50bp.py \
 -c <Chromosome you are making predictions for. Default: chr21> \
--e <Epoch for the model you are using. Default: 3610> \
+-e <Epoch for the model you are using. Default: 4457> \
 -l <Cell type for your PRO-seq assay. Default: K562> \
 -p <Path for plus bigwig file. Default=seq/G1/G1_plus.bw> \
 -m <Path for minus bigwig file. Default=seq/G1/G1_minus.bw>
@@ -109,7 +109,7 @@ Example:
 
 ```
 python write-bigwigs-all-positions-50bp.py \
--c chr7 -e 3610 -l K562 -p seq/G1/G1_plus.bw -m seq/G1/G1_minus.bw
+-c chr7 -e 4457 -l K562 -p seq/G1/G1_plus.bw -m seq/G1/G1_minus.bw
 ```
 
 This program writes the predictions as bigwig files into the appropriate directories under the data/bigwigs directory.

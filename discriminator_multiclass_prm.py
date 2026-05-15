@@ -68,6 +68,7 @@ import pandas as pd
 import numpy as np
 import random
 random.seed(2)
+np.random.seed(2)
 
 PREVIOUS_EPOCH = 0
 numberOfStepsPerEpoch = 50
@@ -329,15 +330,18 @@ def val_data_generator():
             labels =  np.vstack(labels)
             yield features, labels
 
-from tensorflow.keras.models import Sequential, load_model
-from tensorflow.keras.layers import Dense, Activation, Conv2D, ZeroPadding2D, MaxPooling2D, Flatten, Activation, Dropout, Reshape, BatchNormalization
+# Force keras to only use first GPU
+import os
+os.environ["CUDA_VISIBLE_DEVICES"]=gpuNumber
+
+import tensorflow as tf
+from tensorflow.keras.models import Sequential, load_model, Model
+from tensorflow.keras.layers import Dense, Activation, Conv2D, ZeroPadding2D, MaxPooling2D, Flatten, Activation, Dropout, Reshape, BatchNormalization, Input, Add
 from tensorflow.keras.callbacks import TensorBoard, ModelCheckpoint
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras import backend as K
 
-# Force keras to only use first GPU
-import os
-os.environ["CUDA_VISIBLE_DEVICES"]=gpuNumber
+tf.random.set_seed(2)
 
 OUTPUT_FOLDER = data_folder + 'models/' + labelVersion + '_' + CNNVersion + '/' + model_folder
 # Don't forget to change this when setting the directory for tensorboard logs
@@ -347,9 +351,76 @@ LOAD_MODEL_FROM = OUTPUT_FOLDER + '/weights-{}.hdf5'.format(str(PREVIOUS_EPOCH).
 
 DROPOUT = 0.2
 
+def residual_block(x, filters, kernel_size, dilation_rate, dropout_rate, pool_size, name_prefix):
+    """Create a residual block with dilated convolutions."""
+    shortcut = x
+
+    # First conv layer
+    x = Conv2D(filters, kernel_size=kernel_size, padding='same',
+               dilation_rate=dilation_rate, name=f'{name_prefix}_conv1')(x)
+    x = BatchNormalization(name=f'{name_prefix}_bn1')(x)
+    x = Activation('relu', name=f'{name_prefix}_relu1')(x)
+
+    # Second conv layer
+    x = Conv2D(filters, kernel_size=kernel_size, padding='same',
+               dilation_rate=dilation_rate, name=f'{name_prefix}_conv2')(x)
+    x = BatchNormalization(name=f'{name_prefix}_bn2')(x)
+
+    # Skip connection
+    x = Add(name=f'{name_prefix}_add')([shortcut, x])
+    x = Activation('relu', name=f'{name_prefix}_relu2')(x)
+
+    # Pooling and dropout
+    x = MaxPooling2D(pool_size=pool_size, name=f'{name_prefix}_pool')(x)
+    if dropout_rate > 0:
+        x = Dropout(dropout_rate, name=f'{name_prefix}_dropout')(x)
+
+    return x
+
 if LOAD_MODEL_FROM:
     model = load_model(LOAD_MODEL_FROM)
-else:
+
+elif CNNVersion == 'CNN_V5':
+    # Build CNN_V5 using Functional API with residual blocks and exponential dilation
+    input_shape = (2, WINDOW, 1)
+    inputs = Input(shape=input_shape, name='input')
+
+    # Initial conv block
+    x = Conv2D(32, kernel_size=(3, 8), padding='same', name='initial_conv')(inputs)
+    x = BatchNormalization(name='initial_bn')(x)
+    x = Activation('relu', name='initial_relu')(x)
+    x = MaxPooling2D(pool_size=(1, 2), name='initial_pool')(x)
+    if DROPOUT != 0:
+        x = Dropout(DROPOUT, name='initial_dropout')(x)
+
+    # Residual blocks with exponential dilation
+    x = residual_block(x, 32, (3, 8), (1, 1), DROPOUT, (1, 2), 'res_block1')
+    x = residual_block(x, 32, (3, 8), (1, 2), DROPOUT, (1, 2), 'res_block2')
+    x = residual_block(x, 32, (3, 8), (1, 4), DROPOUT, (1, 2), 'res_block3')
+    x = residual_block(x, 32, (3, 8), (1, 8), DROPOUT, (1, 2), 'res_block4')
+
+    # Final reduction conv
+    x = Conv2D(16, kernel_size=(3, 8), padding='same', name='final_conv')(x)
+    x = BatchNormalization(name='final_bn')(x)
+    x = Activation('relu', name='final_relu')(x)
+    x = MaxPooling2D(pool_size=(2, 2), name='final_pool')(x)
+    if DROPOUT != 0:
+        x = Dropout(DROPOUT, name='final_dropout')(x)
+
+    # Dense layers (same as CNN_V4)
+    x = Flatten()(x)
+    x = Dense(256, activation='relu', name='dense1')(x)
+    if DROPOUT != 0:
+        x = Dropout(DROPOUT, name='dense1_dropout')(x)
+    outputs = Dense(15, activation='sigmoid', name='output')(x)
+
+    # Create and compile model
+    model = Model(inputs=inputs, outputs=outputs, name='CNN_V5_ResidualDilated')
+    opt = Adam(lr=0.0001)
+    model.compile(optimizer=opt, loss='binary_crossentropy', metrics=['accuracy'])
+
+elif CNNVersion == 'CNN_V4':
+    # Existing CNN_V4 code
     model = Sequential()
     input_shape = (2, WINDOW, 1)
 
@@ -374,49 +445,49 @@ else:
     model.add(MaxPooling2D(pool_size=(1, 2), strides=(1, 2)))
     if DROPOUT != 0:
         model.add(Dropout(DROPOUT))
-    
+
     model.add(Conv2D(32, kernel_size=(3, 8), strides=(1, 1), padding='same'))
     model.add(BatchNormalization())
     model.add(Activation('relu'))
     model.add(MaxPooling2D(pool_size=(1, 2), strides=(1, 2)))
     if DROPOUT != 0:
         model.add(Dropout(DROPOUT))
-    
+
     model.add(Conv2D(32, kernel_size=(3, 8), strides=(1, 1), padding='same'))
     model.add(BatchNormalization())
     model.add(Activation('relu'))
     model.add(MaxPooling2D(pool_size=(1, 2), strides=(1, 2)))
     if DROPOUT != 0:
         model.add(Dropout(DROPOUT))
-        
+
     model.add(Conv2D(32, kernel_size=(3, 8), strides=(1, 1), padding='same'))
     model.add(BatchNormalization())
     model.add(Activation('relu'))
     model.add(MaxPooling2D(pool_size=(1, 2), strides=(1, 2)))
     if DROPOUT != 0:
         model.add(Dropout(DROPOUT))
-        
+
     #model.add(Conv2D(32, kernel_size=(3, 8), strides=(1, 1), padding='same'))
     #model.add(BatchNormalization())
     #model.add(Activation('relu'))
     #model.add(MaxPooling2D(pool_size=(1, 2), strides=(1, 2)))
     #if DROPOUT != 0:
     #    model.add(Dropout(DROPOUT))
-        
+
     #model.add(Conv2D(32, kernel_size=(3, 8), strides=(1, 1), padding='same'))
     #model.add(BatchNormalization())
     #model.add(Activation('relu'))
     #model.add(MaxPooling2D(pool_size=(1, 2), strides=(1, 2)))
     #if DROPOUT != 0:
     #    model.add(Dropout(DROPOUT))
-        
+
     #model.add(Conv2D(32, kernel_size=(3, 8), strides=(1, 1), padding='same'))
     #model.add(BatchNormalization())
     #model.add(Activation('relu'))
     #model.add(MaxPooling2D(pool_size=(1, 2), strides=(1, 2)))
     #if DROPOUT != 0:
     #    model.add(Dropout(DROPOUT))
-    
+
     model.add(Conv2D(16, kernel_size=(3, 8), strides=(1, 1), padding='same'))
     model.add(BatchNormalization())
     model.add(Activation('relu'))
@@ -433,6 +504,9 @@ else:
     opt = Adam(lr=0.0001)
 
     model.compile(optimizer=opt, loss='binary_crossentropy', metrics=['accuracy'])
+
+else:
+    raise ValueError(f"Unknown CNNVersion: {CNNVersion}")
 
 #print(model.summary())
 
