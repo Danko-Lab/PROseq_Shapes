@@ -1,3 +1,5 @@
+![PROseq_Shapes](./header_image.png)
+
 # PROseq_Shapes
 Accurate de novo transcription unit annotation from run-on and sequencing data
 
@@ -9,7 +11,7 @@ If you use this code or the resulting assemblies, please cite the following pape
 
 *Accurate de novo transcription unit annotation from run-on and sequencing data* <br />
 Paul R. Munn, Jay Chia, Charles G. Danko <br />
-Unpublished
+PLOS Computational Biology
 
 
 ## Prerequisites
