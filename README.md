@@ -9,9 +9,8 @@ Annotations of functional elements in Metazoan genomes are critical tools used t
 
 If you use this code or the resulting assemblies, please cite the following paper:
 
-*Accurate de novo transcription unit annotation from run-on and sequencing data* <br />
-Paul R. Munn, Jay Chia, Charles G. Danko <br />
-PLOS Computational Biology
+Munn PR, Chia J, Danko CG (2026) Accurate *de novo* transcription unit annotation from run-on and sequencing data.  <br />
+PLoS Comput Biol 22(8): e1014559. [https://doi.org/10.1371/journal.pcbi.1014559](https://doi.org/10.1371/journal.pcbi.1014559)
 
 
 ## Prerequisites
